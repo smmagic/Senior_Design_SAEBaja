@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Found at
+# https://raspberrypi.stackexchange.com/questions/62339/measure-rpm-using-hall-sensor-and-pigpio
+
 # read_RPM.py
 # 2016-01-20
 # Public Domain
