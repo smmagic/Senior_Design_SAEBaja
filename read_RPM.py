@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
-# Found at
-# https://raspberrypi.stackexchange.com/questions/62339/measure-rpm-using-hall-sensor-and-pigpio
-
 # read_RPM.py
 # 2016-01-20
 # Public Domain
-# Modified By Alex Snouffer 9/30/18
 
 import time
 import pigpio # http://abyz.co.uk/rpi/pigpio/python.html
@@ -33,7 +29,6 @@ class reader:
       number between 1 and 1000.  It defaults to 5.  An RPM
       less than the minimum RPM returns 0.0.
       """
-      
       self.pi = pi
       self.gpio = gpio
       self.pulses_per_rev = pulses_per_rev
@@ -62,26 +57,26 @@ class reader:
 
       self._cb = pi.callback(gpio, pigpio.RISING_EDGE, self._cbf)
       pi.set_watchdog(gpio, self._watchdog)
-    
+
    def _cbf(self, gpio, level, tick):
 
       if level == 1: # Rising edge.
 
-          if self._high_tick is not None:
-              t = pigpio.tickDiff(self._high_tick, tick)
+         if self._high_tick is not None:
+            t = pigpio.tickDiff(self._high_tick, tick)
 
-              if self._period is not None:
-                  self._period = (self._old * self._period) + (self._new * t)
-              else:
-                  self._period = t
+            if self._period is not None:
+               self._period = (self._old * self._period) + (self._new * t)
+            else:
+               self._period = t
 
-          self._high_tick = tick
+         self._high_tick = tick
 
       elif level == 2: # Watchdog timeout.
 
-          if self._period is not None:
-              if self._period < 2000000000:
-                  self._period += (self._watchdog * 1000)
+         if self._period is not None:
+            if self._period < 2000000000:
+               self._period += (self._watchdog * 1000)
 
    def RPM(self):
       """
@@ -92,6 +87,7 @@ class reader:
          RPM = 60000000.0 / (self._period * self.pulses_per_rev)
          if RPM < self.min_RPM:
             RPM = 0.0
+
       return RPM
 
    def cancel(self):
@@ -103,57 +99,29 @@ class reader:
 
 if __name__ == "__main__":
 
-    import time
-    import pigpio
-    import read_RPM
-    import csv
+   import time
+   import pigpio
+   import read_RPM
 
-    RPM1_GPIO = 5
-    RPM2_GPIO = 6 #Check this to see if these work
-    RUN_TIME = 20.0
-    SAMPLE_TIME = 0.010 #Need to tune
-    speed1 = []
-    speed2 = []
-    speed_time = []
-    inputfile = "inputfile.csv"
-    outputfile = "outputfile.csv"
-    timefile = "time.csv"
+   RPM_GPIO = 4
+   RUN_TIME = 60.0
+   SAMPLE_TIME = 2.0
 
-    pi = pigpio.pi()
+   pi = pigpio.pi()
 
-    p1 = read_RPM.reader(pi, RPM1_GPIO)
-    p2 = read_RPM.reader(pi, RPM2_GPIO)
+   p = read_RPM.reader(pi, RPM_GPIO)
 
-    start = time.time()
+   start = time.time()
 
-    while (time.time() - start) < RUN_TIME:
+   while (time.time() - start) < RUN_TIME:
 
-        time.sleep(SAMPLE_TIME)
-        RPM1 = p1.RPM()
-        RPM2 = p2.RPM()
-        timepoint = time.time()
-        
-        print("RPM1={}".format(int(RPM1+0.5)))
-        print("  RPM2={}".format(int(RPM2+0.5)))
-        speed1.append(RPM1)
-        speed2.append(RPM2)
-        speed_time.append(timepoint)
+      time.sleep(SAMPLE_TIME)
 
-    with open(inputfile, "w") as output:
-        writer = csv.writer(output, lineterminator = '\n')
-        for val in speed1:
-            writer.writerow([val])
-            
-    with open(outputfile, "w") as output:
-        writer = csv.writer(output, lineterminator = '\n')
-        for val in speed2:
-            writer.writerow([val])
-            
-    with open(timefile, "w") as output:
-        writer = csv.writer(output, lineterminator = '\n')
-        for val in speed_time:
-            writer.writerow([val])
-            
-    pi.cancel()
+      RPM = p.RPM()
+     
+      print("RPM={}".format(int(RPM+0.5)))
 
-    pi.stop()
+   p.cancel()
+
+   pi.stop()
+
