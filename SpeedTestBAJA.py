@@ -60,12 +60,12 @@ class reader:
 
       pi.set_mode(gpio, pigpio.INPUT)
 
-      self._cb = pi.callback(gpio, pigpio.RISING_EDGE, self._cbf)
+      self._cb = pi.callback(gpio, pigpio.FALLING_EDGE, self._cbf)
       pi.set_watchdog(gpio, self._watchdog)
     
    def _cbf(self, gpio, level, tick):
 
-      if level == 1: # Rising edge.
+      if level == 0: # Rising edge.
 
           if self._high_tick is not None:
               t = pigpio.tickDiff(self._high_tick, tick)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     RPM1_GPIO = 5
     RPM2_GPIO = 6 #Check this to see if these work
     RUN_TIME = 20.0
-    SAMPLE_TIME = 0.010 #Need to tune
+    SAMPLE_TIME = 0.0001 #Need to tune
     speed1 = []
     speed2 = []
     speed_time = []
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         time.sleep(SAMPLE_TIME)
         RPM1 = p1.RPM()
         RPM2 = p2.RPM()
-        timepoint = time.time()
+        timepoint = time.time() - start
         
         print("RPM1={}".format(int(RPM1+0.5)))
         print("  RPM2={}".format(int(RPM2+0.5)))
