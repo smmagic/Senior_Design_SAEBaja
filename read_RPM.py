@@ -40,7 +40,7 @@ class reader:
 
       self.min_RPM = min_RPM
 
-      self._watchdog = 200 # Milliseconds.
+      self._watchdog = 10 # Milliseconds.
 
       if weighting < 0.0:
          weighting = 0.0
